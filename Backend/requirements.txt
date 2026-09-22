@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+python-dotenv
+pytest
+python-multipart
+soundfile
+librosa
+ffmpeg
+sqlalchemy
+asyncpg
+alembic
+pytest-asyncio
+httpx2
+neutts
