@@ -310,10 +310,10 @@ created_at
 
 Tasks:
 
-- [ ] Create users table.
-- [ ] Add primary key.
-- [ ] Add timestamps.
-- [ ] Add user relationship.
+- [X] Create users table.
+- [X] Add primary key.
+- [X] Add timestamps.
+- [X] Add user relationship.
 
 ## Voice Profiles
 
@@ -332,14 +332,14 @@ updated_at
 
 Tasks:
 
-- [ ] Create `voice_profiles` table.
-- [ ] Add foreign key to users.
-- [ ] Add voice status.
-- [ ] Add processed audio path.
-- [ ] Add model information.
-- [ ] Add timestamps.
-- [ ] Add indexes where required.
-- [ ] Add CRUD repository/service.
+- [X] Create `voice_profiles` table.
+- [X] Add foreign key to users.
+- [X] Add voice status.
+- [X] Add processed audio path.
+- [X] Add model information.
+- [X] Add timestamps.
+- [X] Add indexes where required.
+- [X] Add CRUD repository/service.
 
 ### Relationship
 
@@ -368,15 +368,15 @@ created_at
 
 Tasks:
 
-- [ ] Create `generations` table.
-- [ ] Add user relationship.
-- [ ] Add selected voice relationship.
-- [ ] Store input text.
-- [ ] Store generated audio path.
-- [ ] Store model.
-- [ ] Store generation time.
-- [ ] Store timestamp.
-- [ ] Add indexes where useful.
+- [X] Create `generations` table.
+- [X] Add user relationship.
+- [X] Add selected voice relationship.
+- [X] Store input text.
+- [X] Store generated audio path.
+- [X] Store model.
+- [X] Store generation time.
+- [X] Store timestamp.
+- [X] Add indexes where useful.
 
 ---
 
@@ -401,11 +401,11 @@ Generated Speech
 
 Tasks:
 
-- [ ] Study current NeuTTS repository/API.
-- [ ] Select NeuTTS model variant.
-- [ ] Decide local model format.
-- [ ] Download/configure model weights.
-- [ ] Install NeuTTS dependencies.
+- [X] Study current NeuTTS repository/API.
+- [X] Select NeuTTS model variant.
+- [X] Decide local model format.
+- [X] Download/configure model weights.
+- [X] Install NeuTTS dependencies.
 - [ ] Test NeuTTS independently.
 - [ ] Test reference voice cloning.
 - [ ] Test text-to-speech generation.
