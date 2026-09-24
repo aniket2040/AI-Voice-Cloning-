@@ -11,15 +11,17 @@ class GenerationRepository:
         self.session = session
 
     async def create(
-        self,
-        user_id: UUID,
-        voice_id: UUID,
-        input_text: str,
-        audio_path: str,
-        generation_time: float,
-        model: str = "neutts",
+            self,
+            generation_id: UUID,
+            user_id: UUID,
+            voice_id: UUID,
+            input_text: str,
+            audio_path: str,
+            generation_time: float,
+            model: str = "neutts",
     ) -> Generation:
         generation = Generation(
+            id=generation_id,
             user_id=user_id,
             voice_id=voice_id,
             input_text=input_text,
@@ -94,3 +96,18 @@ class GenerationRepository:
         await self.session.commit()
 
         return True
+
+    async def delete_by_voice(
+            self,
+            voice_id: UUID,
+            user_id: UUID,
+    ) -> list[Generation]:
+        generations = await self.list_by_voice(
+            voice_id=voice_id,
+            user_id=user_id,
+        )
+
+        for generation in generations:
+            await self.session.delete(generation)
+
+        return generations

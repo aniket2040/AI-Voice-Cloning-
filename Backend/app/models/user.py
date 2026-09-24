@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base
 
 
@@ -16,6 +17,18 @@ class User(Base):
 
     name: Mapped[str] = mapped_column(
         String(100),
+        nullable=False,
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    password_hash: Mapped[str] = mapped_column(
+        String(255),
         nullable=False,
     )
 

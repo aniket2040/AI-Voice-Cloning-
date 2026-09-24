@@ -4,17 +4,15 @@ import pytest
 
 from app.models.voice_profile import VoiceStatus
 from app.repositories.generation_repository import GenerationRepository
-from app.repositories.user_repository import UserRepository
 from app.repositories.voice_profile_repository import VoiceProfileRepository
 
 
 @pytest.mark.asyncio
-async def test_create_generation(db_session):
-    user_repository = UserRepository(db_session)
+async def test_create_generation(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
     generation_repository = GenerationRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user()
 
     voice = await voice_repository.create(
         user_id=user.id,
@@ -41,12 +39,11 @@ async def test_create_generation(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_generation_by_id(db_session):
-    user_repository = UserRepository(db_session)
+async def test_get_generation_by_id(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
     generation_repository = GenerationRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user()
 
     voice = await voice_repository.create(
         user_id=user.id,
@@ -72,11 +69,10 @@ async def test_get_generation_by_id(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_nonexistent_generation(db_session):
-    user_repository = UserRepository(db_session)
+async def test_get_nonexistent_generation(db_session, create_test_user):
     generation_repository = GenerationRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user()
 
     generation = await generation_repository.get_by_id(
         generation_id=uuid4(),
@@ -87,12 +83,11 @@ async def test_get_nonexistent_generation(db_session):
 
 
 @pytest.mark.asyncio
-async def test_list_generations_by_user(db_session):
-    user_repository = UserRepository(db_session)
+async def test_list_generations_by_user(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
     generation_repository = GenerationRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user()
 
     voice = await voice_repository.create(
         user_id=user.id,
@@ -124,12 +119,11 @@ async def test_list_generations_by_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_list_generations_by_voice(db_session):
-    user_repository = UserRepository(db_session)
+async def test_list_generations_by_voice(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
     generation_repository = GenerationRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user()
 
     voice1 = await voice_repository.create(
         user_id=user.id,
@@ -170,12 +164,11 @@ async def test_list_generations_by_voice(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_generation(db_session):
-    user_repository = UserRepository(db_session)
+async def test_delete_generation(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
     generation_repository = GenerationRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user()
 
     voice = await voice_repository.create(
         user_id=user.id,
@@ -207,13 +200,15 @@ async def test_delete_generation(db_session):
 
 
 @pytest.mark.asyncio
-async def test_user_cannot_access_another_users_generation(db_session):
-    user_repository = UserRepository(db_session)
+async def test_user_cannot_access_another_users_generation(
+    db_session,
+    create_test_user,
+):
     voice_repository = VoiceProfileRepository(db_session)
     generation_repository = GenerationRepository(db_session)
 
-    user1 = await user_repository.create("User One")
-    user2 = await user_repository.create("User Two")
+    user1 = await create_test_user(name="User One")
+    user2 = await create_test_user(name="User Two")
 
     voice = await voice_repository.create(
         user_id=user1.id,

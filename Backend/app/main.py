@@ -7,6 +7,8 @@ from app.config import settings
 from app.core.logging import setup_logging
 from app.api.routes.voices import router as voices_router
 from app.services.neutts_service import NeuTTSService
+from app.api.routes.auth import router as auth_router
+from fastapi.middleware.cors import CORSMiddleware
 
 setup_logging()
 
@@ -49,7 +51,19 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(voices_router)
+app.include_router(auth_router)
 
 
 @app.get("/health")

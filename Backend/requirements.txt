@@ -13,3 +13,6 @@ alembic
 pytest-asyncio
 httpx2
 neutts
+pwdlib[argon2]
+email-validator
+PyJWT

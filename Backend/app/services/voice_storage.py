@@ -1,8 +1,11 @@
 from pathlib import Path
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 import soundfile as sf
 import torch
+from app.security.path import safe_path
+from app.models import Generation
+
 
 class VoiceStorageError(Exception):
     """Raised when voice storage operations fail."""
@@ -11,25 +14,26 @@ class VoiceStorageError(Exception):
 class VoiceStorageService:
 
     def __init__(self, base_dir: str | Path = "storage"):
-        self.base_dir = Path(base_dir)
+        self.base_dir = Path(base_dir).resolve()
 
     def create_voice_id(self) -> str:
         """Generate a unique voice ID."""
         return f"voice_{uuid4().hex}"
 
     def get_voice_directory(
-        self,
-        user_id: str,
-        voice_id: str,
+            self,
+            user_id: str | UUID,
+            voice_id: str | UUID,
     ) -> Path:
         """Return the directory for a registered voice."""
 
-        return (
+        return safe_path(
+            self.base_dir,
             self.base_dir
             / "users"
-            / user_id
+            / str(user_id)
             / "voices"
-            / voice_id
+            / str(voice_id),
         )
 
     def get_processed_voice_path(
@@ -153,11 +157,13 @@ class VoiceStorageService:
         return path.is_file()
 
     def delete_voice(
-        self,
-        user_id: str,
-        voice_id: str,
+            self,
+            user_id: str,
+            voice_id: str,
     ) -> None:
-        """Delete a registered voice and its processed audio."""
+        """
+        Delete all stored files associated with a registered voice.
+        """
 
         voice_dir = self.get_voice_directory(
             user_id,
@@ -167,45 +173,56 @@ class VoiceStorageService:
         if not voice_dir.exists():
             return
 
+        if not voice_dir.is_dir():
+            raise VoiceStorageError(
+                "Voice storage path is not a directory."
+            )
+
+        # Delete processed voice
         processed_file = voice_dir / "processed.wav"
 
         if processed_file.exists():
             processed_file.unlink()
 
-        voice_dir.rmdir()
+        # Delete NeuTTS reference codes
+        reference_codes_file = voice_dir / "reference_codes.pt"
+
+        if reference_codes_file.exists():
+            reference_codes_file.unlink()
+
+        # Remove voice directory if empty
+        if voice_dir.exists():
+            voice_dir.rmdir()
 
     def get_generation_path(
             self,
-            user_id: str,
-            generation_id,
+            user_id: str | UUID,
+            generation_id: str | UUID,
     ) -> Path:
-        return (
-                self.base_dir
-                / "users"
-                / str(user_id)
-                / "generations"
-                / f"{generation_id}.wav"
+        return safe_path(
+            self.base_dir,
+            self.base_dir
+            / "users"
+            / str(user_id)
+            / "generations"
+            / f"{generation_id}.wav",
         )
 
     def store_generation(
             self,
-            user_id: str,
-            generation_id,
+            user_id: str | UUID,
+            generation_id: str | UUID,
             audio,
     ) -> Path:
-        generation_dir = (
-                self.base_dir
-                / "users"
-                / str(user_id)
-                / "generations"
+        destination = self.get_generation_path(
+            user_id,
+            generation_id,
         )
 
-        generation_dir.mkdir(
+        destination.parent.mkdir(
             parents=True,
             exist_ok=True,
         )
-
-        destination = generation_dir / f"{generation_id}.wav"
 
         sf.write(
             destination,
@@ -215,3 +232,37 @@ class VoiceStorageService:
         )
 
         return destination
+
+    def delete_generation(
+            self,
+            user_id: str,
+            generation_id,
+    ) -> None:
+        """
+        Delete generated speech audio for a generation.
+        """
+
+        generation_path = self.get_generation_path(
+            user_id,
+            generation_id,
+        )
+
+        if generation_path.exists():
+            generation_path.unlink()
+
+    async def delete_by_voice(
+            self,
+            voice_id: UUID,
+            user_id: UUID,
+    ) -> list[Generation]:
+        generations = await self.list_by_voice(
+            voice_id=voice_id,
+            user_id=user_id,
+        )
+
+        for generation in generations:
+            await self.session.delete(generation)
+
+        return generations
+
+

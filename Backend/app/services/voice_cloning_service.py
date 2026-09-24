@@ -100,6 +100,7 @@ class VoiceCloningService:
         rtf = inference_time / audio_duration if audio_duration > 0 else 0.0
 
         generation = await self.generation_repository.create(
+            generation_id=generation_id,
             user_id=user_id,
             voice_id=voice_id,
             input_text=input_text,

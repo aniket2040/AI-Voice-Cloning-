@@ -330,3 +330,82 @@ def test_processes_mp3_input(tmp_path):
     assert info.subtype == "PCM_16"
     assert info.samplerate == 16_000
     assert info.channels == 1
+
+
+def test_process_stereo_audio_converts_to_mono(tmp_path):
+    input_path = tmp_path / "stereo.wav"
+    output_path = tmp_path / "processed.wav"
+
+    sample_rate = 16000
+    duration = 5
+
+    audio = np.full(
+        (sample_rate * duration, 2),
+        0.1,
+        dtype=np.float32,
+    )
+
+    sf.write(
+        input_path,
+        audio,
+        sample_rate,
+        subtype="PCM_16",
+    )
+
+    service = AudioProcessingService()
+
+    result = service.process(
+        input_path=input_path,
+        output_path=output_path,
+    )
+
+    processed_audio, processed_sample_rate = sf.read(
+        output_path
+    )
+
+    assert result.channels == 1
+    assert processed_sample_rate == 16000
+
+    if processed_audio.ndim == 1:
+        channels = 1
+    else:
+        channels = processed_audio.shape[1]
+
+    assert channels == 1
+
+
+def test_process_audio_resamples_to_target_sample_rate(tmp_path):
+    input_path = tmp_path / "44100.wav"
+    output_path = tmp_path / "processed.wav"
+
+    original_sample_rate = 44100
+    duration = 5
+
+    audio = np.full(
+        original_sample_rate * duration,
+        0.1,
+        dtype=np.float32,
+    )
+
+    sf.write(
+        input_path,
+        audio,
+        original_sample_rate,
+        subtype="PCM_16",
+    )
+
+    service = AudioProcessingService()
+
+    result = service.process(
+        input_path=input_path,
+        output_path=output_path,
+    )
+
+    processed_audio, processed_sample_rate = sf.read(
+        output_path
+    )
+
+    assert result.original_sample_rate == 44100
+    assert result.sample_rate == 16000
+    assert processed_sample_rate == 16000
+    assert processed_audio.ndim == 1

@@ -1,39 +1,47 @@
-from uuid import UUID
+from pathlib import Path
 from unittest.mock import Mock
-import soundfile as sf
+from uuid import UUID
+
 import numpy as np
 import pytest
+import soundfile as sf
 import torch
 from fastapi.testclient import TestClient
-from pathlib import Path
-from app.repositories.generation_repository import GenerationRepository
-from app.db.postgres import AsyncSessionLocal, get_db
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
+
+from app.config import settings
+from app.db.postgres import get_db
 from app.main import app
-from app.repositories.user_repository import UserRepository
-from app.repositories.voice_profile_repository import VoiceProfileRepository
 from app.models.voice_profile import VoiceStatus
+from app.repositories.generation_repository import GenerationRepository
+from app.repositories.voice_profile_repository import VoiceProfileRepository
+from app.security.jwt import create_access_token
 
 
 @pytest.mark.asyncio
 async def test_generate_voice_api(
     tmp_path,
     db_session,
+    create_test_user,
 ):
     # ---------------------------------------------------------
     # 1. Create test user
     # ---------------------------------------------------------
 
-    user_repository = UserRepository(db_session)
-
-    user = await user_repository.create(
-        "Generation API Test User"
+    user = await create_test_user(
+        name="Generation API Test User"
     )
+
+    token = create_access_token(user.id)
 
     # ---------------------------------------------------------
     # 2. Create voice profile storage
     # ---------------------------------------------------------
 
-    voice_id = UUID("11111111-1111-1111-1111-111111111111")
+    voice_id = UUID(
+        "11111111-1111-1111-1111-111111111111"
+    )
 
     voice_directory = (
         tmp_path
@@ -101,11 +109,22 @@ async def test_generate_voice_api(
     assert voice is not None
 
     # ---------------------------------------------------------
-    # 5. Give FastAPI its OWN database session
+    # 5. Give FastAPI its OWN NullPool database session
     # ---------------------------------------------------------
 
+    test_engine = create_async_engine(
+        settings.database_url,
+        echo=settings.debug,
+        poolclass=NullPool,
+    )
+
+    TestSessionLocal = async_sessionmaker(
+        bind=test_engine,
+        expire_on_commit=False,
+    )
+
     async def override_get_db():
-        async with AsyncSessionLocal() as session:
+        async with TestSessionLocal() as session:
             yield session
 
     app.dependency_overrides[get_db] = override_get_db
@@ -142,8 +161,8 @@ async def test_generate_voice_api(
 
             response = client.post(
                 f"/api/voices/{voice.id}/generate",
-                params={
-                    "user_id": str(user.id),
+                headers={
+                    "Authorization": f"Bearer {token}",
                 },
                 json={
                     "text": (
@@ -202,9 +221,11 @@ async def test_generate_voice_api(
                 db_session
             )
 
-            stored_generation = await generation_repository.get_by_id(
-                generation_id=generation_id,
-                user_id=user.id,
+            stored_generation = (
+                await generation_repository.get_by_id(
+                    generation_id=generation_id,
+                    user_id=user.id,
+                )
             )
 
             assert stored_generation is not None
@@ -215,7 +236,10 @@ async def test_generate_voice_api(
                 "Hello, this is my generated voice."
             )
             assert stored_generation.model == "neutts"
-            assert stored_generation.audio_path == data["audio_path"]
+            assert (
+                stored_generation.audio_path
+                == data["audio_path"]
+            )
             assert stored_generation.generation_time >= 0
 
             # -------------------------------------------------
@@ -226,13 +250,13 @@ async def test_generate_voice_api(
 
     finally:
         # -----------------------------------------------------
-        # 12. Clean up FastAPI dependency overrides
+        # Clean up FastAPI dependency overrides
         # -----------------------------------------------------
 
         app.dependency_overrides.clear()
 
         # -----------------------------------------------------
-        # 13. Clean up NeuTTS test factory
+        # Clean up NeuTTS test factory
         # -----------------------------------------------------
 
         if hasattr(
@@ -240,3 +264,143 @@ async def test_generate_voice_api(
             "neutts_service_factory",
         ):
             del app.state.neutts_service_factory
+
+        await test_engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_generate_voice_requires_authentication(
+    tmp_path,
+    db_session,
+    create_test_user,
+):
+    user = await create_test_user(
+        name="Generation Auth Test User"
+    )
+
+    voice_repository = VoiceProfileRepository(
+        db_session
+    )
+
+    voice = await voice_repository.create(
+        user_id=user.id,
+        name="Protected Generation Voice",
+        processed_audio_path=str(
+            tmp_path / "processed.wav"
+        ),
+        status=VoiceStatus.READY,
+        model="neutts",
+    )
+
+    mock_neutts_service = Mock()
+
+    try:
+        app.state.neutts_service_factory = (
+            lambda: mock_neutts_service
+        )
+
+        with TestClient(app) as client:
+            response = client.post(
+                f"/api/voices/{voice.id}/generate",
+                json={
+                    "text": "This must not be generated.",
+                },
+            )
+
+        assert response.status_code == 401
+        mock_neutts_service.infer.assert_not_called()
+
+    finally:
+        if hasattr(
+            app.state,
+            "neutts_service_factory",
+        ):
+            del app.state.neutts_service_factory
+
+
+@pytest.mark.asyncio
+async def test_generate_voice_cannot_access_other_users_voice(
+    tmp_path,
+    db_session,
+    create_test_user,
+):
+    user_a = await create_test_user(
+        name="Generation Owner",
+    )
+
+    user_b = await create_test_user(
+        name="Generation Attacker",
+    )
+
+    voice_repository = VoiceProfileRepository(
+        db_session
+    )
+
+    voice = await voice_repository.create(
+        user_id=user_a.id,
+        name="Private Generation Voice",
+        processed_audio_path=str(
+            tmp_path / "processed.wav"
+        ),
+        status=VoiceStatus.READY,
+        model="neutts",
+    )
+
+    token_b = create_access_token(user_b.id)
+
+    # Use a fresh NullPool engine because TestClient runs the
+    # FastAPI app in another event loop on Windows.
+    test_engine = create_async_engine(
+        settings.database_url,
+        echo=settings.debug,
+        poolclass=NullPool,
+    )
+
+    TestSessionLocal = async_sessionmaker(
+        bind=test_engine,
+        expire_on_commit=False,
+    )
+
+    async def override_get_db():
+        async with TestSessionLocal() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    mock_neutts_service = Mock()
+
+    mock_neutts_service.infer.return_value = np.zeros(
+        24000,
+        dtype=np.float32,
+    )
+
+    try:
+        app.state.neutts_service_factory = (
+            lambda: mock_neutts_service
+        )
+
+        with TestClient(app) as client:
+            response = client.post(
+                f"/api/voices/{voice.id}/generate",
+                headers={
+                    "Authorization": f"Bearer {token_b}",
+                },
+                json={
+                    "text": "This must not be generated.",
+                },
+            )
+
+        assert response.status_code == 404
+
+        mock_neutts_service.infer.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+        if hasattr(
+            app.state,
+            "neutts_service_factory",
+        ):
+            del app.state.neutts_service_factory
+
+        await test_engine.dispose()

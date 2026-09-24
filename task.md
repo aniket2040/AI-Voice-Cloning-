@@ -406,16 +406,16 @@ Tasks:
 - [X] Decide local model format.
 - [X] Download/configure model weights.
 - [X] Install NeuTTS dependencies.
-- [ ] Test NeuTTS independently.
-- [ ] Test reference voice cloning.
-- [ ] Test text-to-speech generation.
-- [ ] Determine required reference audio format.
-- [ ] Implement NeuTTS service wrapper.
-- [ ] Load model once at application startup/lazy initialization.
-- [ ] Avoid loading the model for every request.
-- [ ] Add inference error handling.
-- [ ] Measure generation latency.
-- [ ] Measure generated audio duration.
+- [X] Test NeuTTS independently.
+- [X] Test reference voice cloning.
+- [X] Test text-to-speech generation.
+- [X] Determine required reference audio format.
+- [X] Implement NeuTTS service wrapper.
+- [X] Load model once at application startup/lazy initialization.
+- [X] Avoid loading the model for every request.
+- [X] Add inference error handling.
+- [X] Measure generation latency.
+- [X] Measure generated audio duration.
 - [ ] Test multiple registered voices.
 
 ### Critical Optimization
@@ -504,18 +504,18 @@ Response
 
 Tasks:
 
-- [ ] Create generation endpoint.
-- [ ] Validate input text.
-- [ ] Validate `voice_id`.
-- [ ] Verify voice belongs to user.
-- [ ] Verify voice status is `READY`.
-- [ ] Retrieve processed reference audio.
-- [ ] Call NeuTTS.
-- [ ] Save generated speech.
-- [ ] Record generation metadata.
-- [ ] Return generation response.
-- [ ] Add error handling.
-- [ ] Add generation tests.
+- [X] Create generation endpoint.
+- [X] Validate input text.
+- [X] Validate `voice_id`.
+- [X] Verify voice belongs to user.
+- [X] Verify voice status is `READY`.
+- [X] Retrieve processed reference audio.
+- [X] Call NeuTTS.
+- [X] Save generated speech.
+- [X] Record generation metadata.
+- [X] Return generation response.
+- [X] Add error handling.
+- [X] Add generation tests.
 
 ---
 
@@ -533,12 +533,12 @@ storage/
 
 Tasks:
 
-- [ ] Generate unique generation ID.
-- [ ] Save generated WAV/audio.
-- [ ] Associate output with user.
-- [ ] Associate output with voice profile.
-- [ ] Store output path in PostgreSQL.
-- [ ] Prevent generated files from overwriting each other.
+- [X] Generate unique generation ID.
+- [X] Save generated WAV/audio.
+- [X] Associate output with user.
+- [X] Associate output with voice profile.
+- [X] Store output path in PostgreSQL.
+- [X] Prevent generated files from overwriting each other.
 - [ ] Add retrieval endpoint if required.
 
 ---
@@ -553,13 +553,13 @@ GET /api/voices
 
 Tasks:
 
-- [ ] Return user's registered voices.
-- [ ] Return only required metadata.
-- [ ] Do not expose internal filesystem paths unnecessarily.
-- [ ] Include voice ID.
-- [ ] Include voice name.
-- [ ] Include status.
-- [ ] Include creation date.
+- [X] Return user's registered voices.
+- [X] Return only required metadata.
+- [X] Do not expose internal filesystem paths unnecessarily.
+- [X] Include voice ID.
+- [X] Include voice name.
+- [X] Include status.
+- [X] Include creation date.
 
 ### Voice Details
 
@@ -569,10 +569,10 @@ GET /api/voices/{voice_id}
 
 Tasks:
 
-- [ ] Validate ownership.
-- [ ] Return voice metadata.
-- [ ] Handle missing voice.
-- [ ] Handle invalid voice status.
+- [X] Validate ownership.
+- [X] Return voice metadata.
+- [X] Handle missing voice.
+- [X] Handle invalid voice status.
 
 ### Optional Voice Delete
 
@@ -582,11 +582,11 @@ DELETE /api/voices/{voice_id}
 
 Tasks:
 
-- [ ] Confirm deletion behavior.
-- [ ] Delete processed voice file.
-- [ ] Delete database record.
-- [ ] Decide what happens to related generations.
-- [ ] Add authorization check.
+- [X] Confirm deletion behavior.
+- [X] Delete processed voice file.
+- [X] Delete database record.
+- [X] Decide what happens to related generations.
+- [X] Add authorization check.
 
 ---
 
@@ -604,7 +604,7 @@ Tasks:
 - [ ] Ask user for voice name.
 - [ ] Show registered voice after success.
 
-## Registered Voices UI
+## Registered Voi3ces UI
 
 ```text
 My Voices
@@ -651,25 +651,49 @@ Tasks:
 
 ---
 
-# 12. 🔐 Security & Authorization
+# 12. 
+# 🔐 Security & Authorization — TASK.md
 
-Tasks:
+## Goal
 
-- [ ] Define authentication approach.
-- [ ] Verify user identity on voice APIs.
-- [ ] Verify voice ownership before generation.
-- [ ] Prevent user A from accessing user B's voice.
-- [ ] Prevent path traversal.
-- [ ] Sanitize uploaded filenames.
-- [ ] Use generated IDs instead of user-controlled filenames.
-- [ ] Validate audio file content.
-- [ ] Validate text input length.
-- [ ] Add request limits.
-- [ ] Restrict access to stored audio.
-- [ ] Ensure temporary raw files are deleted.
-- [ ] Avoid logging sensitive audio data or full filesystem secrets.
+Secure the AI Voice Cloning backend by introducing:
+
+1. User registration
+2. User login
+3. Authentication
+4. Authorization
+5. Voice ownership protection
+6. File/path security
+7. Input validation
+8. Request limits
+9. Protected audio access
+10. Secure logging
 
 ---
+
+# Phase 1 — User Registration
+
+## 1.1 Inspect Existing User System
+
+- [ ] Inspect `User` SQLAlchemy model
+- [ ] Inspect `UserRepository`
+- [ ] Inspect existing `users` database table
+- [ ] Inspect existing user-related tests
+- [ ] Identify fields that already exist
+- [ ] Avoid duplicating existing functionality
+
+---
+
+## 1.2 Update User Model
+
+Current user model:
+
+```text
+users
+├── id
+├── name
+└── created_at
+
 
 # 13. 🧪 Testing
 

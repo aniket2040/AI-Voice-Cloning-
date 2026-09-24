@@ -6,34 +6,35 @@ from app.repositories.user_repository import UserRepository
 
 
 @pytest.mark.asyncio
-async def test_create_user(db_session):
-    repository = UserRepository(db_session)
-
-    user = await repository.create(
+async def test_create_user(db_session, create_test_user):
+    user = await create_test_user(
         name="Repository Test User"
     )
 
     assert user.id is not None
     assert user.name == "Repository Test User"
+    assert user.email is not None
+    assert user.password_hash is not None
 
+    repository = UserRepository(db_session)
     await repository.delete(user.id)
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_id(db_session):
-    repository = UserRepository(db_session)
-
-    created_user = await repository.create(
+async def test_get_user_by_id(db_session, create_test_user):
+    user = await create_test_user(
         name="Get Test User"
     )
 
-    user = await repository.get_by_id(created_user.id)
+    repository = UserRepository(db_session)
 
-    assert user is not None
-    assert user.id == created_user.id
-    assert user.name == "Get Test User"
+    fetched_user = await repository.get_by_id(user.id)
 
-    await repository.delete(created_user.id)
+    assert fetched_user is not None
+    assert fetched_user.id == user.id
+    assert fetched_user.name == "Get Test User"
+
+    await repository.delete(user.id)
 
 
 @pytest.mark.asyncio
@@ -46,16 +47,16 @@ async def test_get_nonexistent_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_list_users(db_session):
-    repository = UserRepository(db_session)
-
-    user1 = await repository.create(
+async def test_list_users(db_session, create_test_user):
+    user1 = await create_test_user(
         name="List User 1"
     )
 
-    user2 = await repository.create(
+    user2 = await create_test_user(
         name="List User 2"
     )
+
+    repository = UserRepository(db_session)
 
     users = await repository.list_all()
 
@@ -69,12 +70,12 @@ async def test_list_users(db_session):
 
 
 @pytest.mark.asyncio
-async def test_update_user_name(db_session):
-    repository = UserRepository(db_session)
-
-    user = await repository.create(
+async def test_update_user_name(db_session, create_test_user):
+    user = await create_test_user(
         name="Old Name"
     )
+
+    repository = UserRepository(db_session)
 
     updated_user = await repository.update_name(
         user.id,
@@ -88,12 +89,12 @@ async def test_update_user_name(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_user(db_session):
-    repository = UserRepository(db_session)
-
-    user = await repository.create(
+async def test_delete_user(db_session, create_test_user):
+    user = await create_test_user(
         name="Delete Test User"
     )
+
+    repository = UserRepository(db_session)
 
     deleted = await repository.delete(user.id)
 

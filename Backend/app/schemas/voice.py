@@ -39,3 +39,26 @@ class VoiceGenerationResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class VoiceSummaryResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    name: str
+    status: VoiceStatus
+    model: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class VoiceDetailResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    name: str
+    status: VoiceStatus
+    model: str
+    processed_audio_path: str | None = None
+    reference_codes_path: str | None = None
+    reference_text: str | None = None
+    created_at: datetime
+    updated_at: datetime

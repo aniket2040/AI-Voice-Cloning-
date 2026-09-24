@@ -1,23 +1,24 @@
-from uuid import uuid4
-
-import pytest
-
 from app.models.voice_profile import VoiceStatus
 from app.repositories.generation_repository import GenerationRepository
-from app.repositories.user_repository import UserRepository
 from app.repositories.voice_profile_repository import VoiceProfileRepository
-
+import pytest
 
 @pytest.mark.asyncio
-async def test_database_relationships_and_ownership(db_session):
+async def test_database_relationships_and_ownership(
+    db_session,
+    create_test_user,
+):
     # ---------------------------------------------------------
     # 1. Create users
     # ---------------------------------------------------------
 
-    user_repository = UserRepository(db_session)
+    user_1 = await create_test_user(
+        name="User One",
+    )
 
-    user_1 = await user_repository.create("User One")
-    user_2 = await user_repository.create("User Two")
+    user_2 = await create_test_user(
+        name="User Two",
+    )
 
     assert user_1.id != user_2.id
 
@@ -115,11 +116,14 @@ async def test_database_relationships_and_ownership(db_session):
     assert generations[0].id == generation.id
 
 
-
 @pytest.mark.asyncio
-async def test_database_multiple_voices_per_user(db_session):
-    user_repository = UserRepository(db_session)
-    user = await user_repository.create("Multi Voice User")
+async def test_database_multiple_voices_per_user(
+    db_session,
+    create_test_user,
+):
+    user = await create_test_user(
+        name="Multi Voice User",
+    )
 
     voice_repository = VoiceProfileRepository(db_session)
 

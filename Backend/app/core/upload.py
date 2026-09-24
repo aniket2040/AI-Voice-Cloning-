@@ -15,6 +15,34 @@ ALLOWED_EXTENSIONS = {
     ".m4a",
 }
 
+ALLOWED_MIME_TYPES = {
+    "audio/wav",
+    "audio/x-wav",
+    "audio/wave",
+    "audio/mpeg",
+    "audio/flac",
+    "audio/ogg",
+    "audio/mp4",
+    "audio/x-m4a",
+}
+
+def validate_mime_type(content_type: str | None) -> str:
+    if not content_type:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Audio content type is required.",
+        )
+
+    content_type = content_type.lower().strip()
+
+    if content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Unsupported audio content type.",
+        )
+
+    return content_type
+
 
 def validate_extension(filename: str) -> str:
     extension = Path(filename).suffix.lower()

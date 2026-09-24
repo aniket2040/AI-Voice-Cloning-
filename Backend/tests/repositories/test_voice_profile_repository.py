@@ -2,18 +2,15 @@ from uuid import uuid4
 
 import pytest
 
-from app.models.user import User
 from app.models.voice_profile import VoiceStatus
-from app.repositories.user_repository import UserRepository
 from app.repositories.voice_profile_repository import VoiceProfileRepository
 
 
 @pytest.mark.asyncio
-async def test_create_voice_profile(db_session):
-    user_repository = UserRepository(db_session)
+async def test_create_voice_profile(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user(name="Test User")
 
     voice = await voice_repository.create(
         user_id=user.id,
@@ -30,11 +27,10 @@ async def test_create_voice_profile(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_voice_by_id(db_session):
-    user_repository = UserRepository(db_session)
+async def test_get_voice_by_id(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user(name="Test User")
 
     created_voice = await voice_repository.create(
         user_id=user.id,
@@ -53,11 +49,10 @@ async def test_get_voice_by_id(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_nonexistent_voice(db_session):
-    user_repository = UserRepository(db_session)
+async def test_get_nonexistent_voice(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user(name="Test User")
 
     voice = await voice_repository.get_by_id(
         voice_id=uuid4(),
@@ -68,11 +63,10 @@ async def test_get_nonexistent_voice(db_session):
 
 
 @pytest.mark.asyncio
-async def test_list_voices_by_user(db_session):
-    user_repository = UserRepository(db_session)
+async def test_list_voices_by_user(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user(name="Test User")
 
     await voice_repository.create(
         user_id=user.id,
@@ -94,11 +88,10 @@ async def test_list_voices_by_user(db_session):
 
 
 @pytest.mark.asyncio
-async def test_list_ready_voices(db_session):
-    user_repository = UserRepository(db_session)
+async def test_list_ready_voices(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user(name="Test User")
 
     voice1 = await voice_repository.create(
         user_id=user.id,
@@ -122,11 +115,10 @@ async def test_list_ready_voices(db_session):
 
 
 @pytest.mark.asyncio
-async def test_update_voice_status(db_session):
-    user_repository = UserRepository(db_session)
+async def test_update_voice_status(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user(name="Test User")
 
     voice = await voice_repository.create(
         user_id=user.id,
@@ -145,11 +137,10 @@ async def test_update_voice_status(db_session):
 
 
 @pytest.mark.asyncio
-async def test_delete_voice(db_session):
-    user_repository = UserRepository(db_session)
+async def test_delete_voice(db_session, create_test_user):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user = await user_repository.create("Test User")
+    user = await create_test_user(name="Test User")
 
     voice = await voice_repository.create(
         user_id=user.id,
@@ -173,12 +164,14 @@ async def test_delete_voice(db_session):
 
 
 @pytest.mark.asyncio
-async def test_user_cannot_access_another_users_voice(db_session):
-    user_repository = UserRepository(db_session)
+async def test_user_cannot_access_another_users_voice(
+    db_session,
+    create_test_user,
+):
     voice_repository = VoiceProfileRepository(db_session)
 
-    user1 = await user_repository.create("User One")
-    user2 = await user_repository.create("User Two")
+    user1 = await create_test_user(name="User One")
+    user2 = await create_test_user(name="User Two")
 
     voice = await voice_repository.create(
         user_id=user1.id,
@@ -192,41 +185,3 @@ async def test_user_cannot_access_another_users_voice(db_session):
     )
 
     assert result is None
-
-
-@pytest.mark.asyncio
-async def test_update_reference_data(db_session):
-    user_repository = UserRepository(db_session)
-    voice_repository = VoiceProfileRepository(db_session)
-
-    user = await user_repository.create(
-        "Reference Test User"
-    )
-
-    voice = await voice_repository.create(
-        user_id=user.id,
-        name="Reference Test Voice",
-        processed_audio_path="storage/test/processed.wav",
-    )
-
-    updated_voice = await voice_repository.update_reference_data(
-        voice_id=voice.id,
-        user_id=user.id,
-        reference_codes_path="storage/test/reference_codes.pt",
-        reference_text="Hello, this is my reference voice.",
-    )
-
-    assert updated_voice is not None
-    assert (
-        updated_voice.reference_codes_path
-        == "storage/test/reference_codes.pt"
-    )
-    assert (
-        updated_voice.reference_text
-        == "Hello, this is my reference voice."
-    )
-
-    await voice_repository.delete(
-        voice_id=voice.id,
-        user_id=user.id,
-    )

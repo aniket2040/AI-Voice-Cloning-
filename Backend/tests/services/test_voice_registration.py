@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import Mock
 
 from app.models.voice_profile import VoiceStatus
-from app.repositories.user_repository import UserRepository
 from app.repositories.voice_profile_repository import VoiceProfileRepository
 from app.services.audio_processing import (
     AudioProcessingError,
@@ -22,16 +21,13 @@ from app.services.voice_storage import VoiceStorageService
 async def test_register_voice_success(
     tmp_path,
     db_session,
+    create_test_user,
 ):
     # ---------------------------------------------------------
     # 1. Create test user in PostgreSQL
     # ---------------------------------------------------------
 
-    user_repository = UserRepository(db_session)
-
-    user = await user_repository.create(
-        "Test User"
-    )
+    user = await create_test_user()
 
     # ---------------------------------------------------------
     # 2. Create temporary uploaded audio
@@ -158,16 +154,13 @@ async def test_register_voice_success(
 async def test_registration_fails_when_processing_fails(
     tmp_path,
     db_session,
+    create_test_user,
 ):
     # ---------------------------------------------------------
     # 1. Create test user
     # ---------------------------------------------------------
 
-    user_repository = UserRepository(db_session)
-
-    user = await user_repository.create(
-        "Test User"
-    )
+    user = await create_test_user()
 
     # ---------------------------------------------------------
     # 2. Create mocked NeuTTS service
@@ -274,16 +267,13 @@ async def test_registration_fails_when_processing_fails(
 async def test_registration_fails_when_storage_fails(
     tmp_path,
     db_session,
+    create_test_user,
 ):
     # ---------------------------------------------------------
     # 1. Create test user
     # ---------------------------------------------------------
 
-    user_repository = UserRepository(db_session)
-
-    user = await user_repository.create(
-        "Test User"
-    )
+    user = await create_test_user()
 
     # ---------------------------------------------------------
     # 2. Create mocked NeuTTS service
