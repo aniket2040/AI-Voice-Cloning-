@@ -1,0 +1,89 @@
+services:
+
+  # ============================================
+  # PostgreSQL
+  # ============================================
+  postgres:
+    image: postgres:17
+    container_name: ai-voice-cloning-postgres
+
+    environment:
+      POSTGRES_DB: voice_cloning
+      POSTGRES_USER: voice_user
+      POSTGRES_PASSWORD: voice_password
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voice_user -d voice_cloning"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    restart: unless-stopped
+
+
+  # ============================================
+  # FastAPI Backend
+  # ============================================
+  backend:
+    image: ai-voice-cloning-backend:latest
+    container_name: ai-voice-cloning-backend
+
+    environment:
+      DATABASE_URL: postgresql+asyncpg://voice_user:voice_password@postgres:5432/voice_cloning
+
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 30
+
+      ENVIRONMENT: production
+      DEBUG: "false"
+
+      HF_TOKEN: ${HF_TOKEN}
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    volumes:
+      - voice_storage:/app/storage
+      - huggingface_cache:/root/.cache/huggingface
+
+    restart: unless-stopped
+
+
+  # ============================================
+  # React + Nginx Frontend
+  # ============================================
+  frontend:
+    image: ai-voice-cloning-frontend:latest
+    container_name: ai-voice-cloning-frontend
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+
+
+# ============================================
+# Persistent Volumes
+# ============================================
+volumes:
+
+  postgres_data:
+
+  voice_storage:
+
+  huggingface_cache:
