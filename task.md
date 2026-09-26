@@ -596,13 +596,13 @@ Tasks:
 
 Tasks:
 
-- [ ] Create upload component.
-- [ ] Add audio file selector.
-- [ ] Add upload progress.
-- [ ] Show processing state.
-- [ ] Show success/failure state.
-- [ ] Ask user for voice name.
-- [ ] Show registered voice after success.
+- [X] Create upload component.
+- [X] Add audio file selector.
+- [X] Add upload progress.
+- [X] Show processing state.
+- [X] Show success/failure state.
+- [X] Ask user for voice name.
+- [X] Show registered voice after success.
 
 ## Registered Voi3ces UI
 
@@ -619,11 +619,11 @@ My Voices
 
 Tasks:
 
-- [ ] Fetch registered voices.
-- [ ] Display voice cards/list.
-- [ ] Show status.
-- [ ] Allow voice selection.
-- [ ] Prevent selection of failed voices.
+- [X] Fetch registered voices.
+- [X] Display voice cards/list.
+- [X] Show status.
+- [X] Allow voice selection.
+- [X] Prevent selection of failed voices.
 
 ## Text-to-Speech UI
 
@@ -641,13 +641,13 @@ Selected Voice: Voice 1
 
 Tasks:
 
-- [ ] Display selected voice.
-- [ ] Add text input.
-- [ ] Add generation button.
-- [ ] Show generation progress.
-- [ ] Handle errors.
-- [ ] Provide audio player.
-- [ ] Show generated audio information.
+- [X] Display selected voice.
+- [X] Add text input.
+- [X] Add generation button.
+- [X] Show generation progress.
+- [X] Handle errors.
+- [X] Provide audio player.
+- [X] Show generated audio information.
 
 ---
 
@@ -675,12 +675,12 @@ Secure the AI Voice Cloning backend by introducing:
 
 ## 1.1 Inspect Existing User System
 
-- [ ] Inspect `User` SQLAlchemy model
-- [ ] Inspect `UserRepository`
-- [ ] Inspect existing `users` database table
-- [ ] Inspect existing user-related tests
-- [ ] Identify fields that already exist
-- [ ] Avoid duplicating existing functionality
+- [X] Inspect `User` SQLAlchemy model
+- [X] Inspect `UserRepository`
+- [X] Inspect existing `users` database table
+- [X] Inspect existing user-related tests
+- [X] Identify fields that already exist
+- [X] Avoid duplicating existing functionality
 
 ---
 
@@ -770,15 +770,15 @@ Generated Speech ────┘
 
 Tasks:
 
-- [ ] Create backend Dockerfile.
-- [ ] Create frontend Dockerfile.
-- [ ] Create Docker Compose configuration.
-- [ ] Configure PostgreSQL container.
-- [ ] Configure persistent storage volume.
-- [ ] Configure environment variables.
-- [ ] Configure GPU support if required.
-- [ ] Test complete application using Docker.
-- [ ] Document Docker setup.
+- [X] Create backend Dockerfile.
+- [X] Create frontend Dockerfile.
+- [X] Create Docker Compose configuration.
+- [X] Configure PostgreSQL container.
+- [X] Configure persistent storage volume.
+- [X] Configure environment variables.
+- [X] Configure GPU support if required.
+- [X] Test complete application using Docker.
+- [X] Document Docker setup.
 
 Target structure:
 
