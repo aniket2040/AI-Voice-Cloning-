@@ -1,5 +1,56 @@
-# 🎙️ AI Voice Cloning System
+<div align="center">
 
+  <img src="docs/banner.png" alt="AI Voice Cloning System Banner" width="100%"/>
+
+  <h1>🎙️ AI Voice Cloning System</h1>
+
+  <p>
+    AI-Powered Voice Cloning & Speech Generation using FastAPI, NeuTTS, PostgreSQL & React
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12"/>
+    <img src="https://img.shields.io/badge/FastAPI-Latest-009688?logo=fastapi&logoColor=white" alt="FastAPI"/>
+    <img src="https://img.shields.io/badge/PyTorch-2.14-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch"/>
+    <img src="https://img.shields.io/badge/NeuTTS-1.4.1-6C63FF" alt="NeuTTS"/>
+    <img src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+    <img src="https://img.shields.io/badge/React-Latest-61DAFB?logo=react&logoColor=black" alt="React"/>
+    <img src="https://img.shields.io/badge/TypeScript-Latest-3178C6?logo=typescript&logoColor=white" alt="TypeScript"/>
+    <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker"/>
+    <img src="https://img.shields.io/badge/License-MIT-orange" alt="License"/>
+  </p>
+
+</div>
+
+---
+
+## 📌 Overview
+
+The **AI Voice Cloning System** is a self-hosted AI application that allows authorized users to register a voice and generate natural-sounding speech using that voice.
+
+The system provides an end-to-end voice cloning pipeline:
+
+```text
+Voice Upload
+     ↓
+Audio Validation
+     ↓
+Audio Processing
+     ↓
+Voice Reference Encoding
+     ↓
+Voice Profile
+     ↓
+Text Input
+     ↓
+NeuTTS
+     ↓
+Generated Speech
+
+```
+
+
+# 🎙️ AI Voice Cloning System
 A self-hosted AI Voice Cloning System that allows authorized users to register a voice, create a reusable voice profile, and generate speech using that voice.
 
 The system is built around **FastAPI**, **NeuTTS**, **PostgreSQL**, **React/Vite**, **Docker**, and **persistent file storage**.
